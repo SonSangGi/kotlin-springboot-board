@@ -11,11 +11,12 @@ import org.springframework.web.bind.annotation.GetMapping
  * @created 2020/03/17
  */
 @Controller
-class HomeController {
+class HomeController(private val boardRepository: BoardRepository) {
 
 
     @GetMapping("/")
     fun list(model: Model): String {
+        model["list"] = boardRepository.findAll()
         return "list"
     }
 
