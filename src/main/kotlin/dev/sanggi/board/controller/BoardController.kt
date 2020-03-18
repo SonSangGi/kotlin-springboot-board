@@ -1,15 +1,16 @@
 package dev.sanggi.board.controller
 
 import dev.sanggi.board.domain.Board
+import dev.sanggi.board.domain.QBoard
 import dev.sanggi.board.repository.BoardRepository
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.function.Consumer
 
 /**
  * @@author SonSangGi
@@ -24,5 +25,8 @@ class BoardController(private val boardRepository: BoardRepository) {
     fun insertBoard(board: Board) = boardRepository.save(board)
 
     @GetMapping("/board")
-    fun getAllBoards(): Page<Board> = boardRepository.findAll(PageRequest.of(1, 10))
+    fun getAllBoards(@RequestParam(defaultValue = "0") page: Int, @RequestParam(defaultValue = "") keyword: String): Page<Board> =
+            boardRepository.findAll(
+                    QBoard.board.title.contains(keyword),
+                    PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "created")))
 }

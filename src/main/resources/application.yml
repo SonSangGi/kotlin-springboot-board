@@ -13,3 +13,10 @@ spring:
   jpa:
     show-sql: true
     open-in-view: false
+---
+spring:
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: true

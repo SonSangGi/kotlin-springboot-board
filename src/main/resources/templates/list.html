@@ -2,6 +2,22 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{common/layout}">
 
+<head>
+    <script>
+        $(() => {
+
+            const actionForm = $("#actionForm");
+
+            // 페이지네이션 클릭 이벤트
+            $(".pagination a").on('click', function (e) {
+                e.preventDefault();
+                actionForm.find("input[name='page']").val($(this).attr('href'));
+                actionForm.submit();
+            });
+        });
+    </script>
+</head>
+
 <div layout:fragment="content" class="col-md-12">
     <table class="table table-dark table-striped table-hover">
         <col width="10%">
@@ -16,7 +32,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each="board,idx : ${list}">
+        <tr th:each="board : ${pages.content}">
             <td>[[${board.no}]]</td>
             <td>[[${board.title}]]</td>
             <td>[[${board.created}]]</td>
@@ -24,10 +40,41 @@
         </tbody>
     </table>
 
-    <!-- Button to Open the Modal -->
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#boardModal">
-        글쓰기
-    </button>
+    <div class="row">
+        <div class="col-md-3">
+            <ul class="pagination"
+                th:with="begin=${(T(Math).floor(pages.number / 5) * 5 + 1)},
+                         end=(${begin + 4 gt pages.totalPages ? pages.totalPages : begin + 4})">
+                <li class="page-item" th:if="${begin ne 1}">
+                    <a class="page-link" th:href="${#numbers.formatDecimal(begin - 1,0,0)}">◀︎</a>
+                </li>
+                <li th:each="page : ${#numbers.sequence(begin, end)}" class="page-item"
+                    th:classappend="${page == pages.number + 1} ? active">
+                    <a class="page-link" th:text="${page}" th:href="${page}"></a>
+                </li>
+                <li class="page-item" th:if="${end lt pages.totalPages}">
+                    <a class="page-link" th:href="${#numbers.formatDecimal(end + 1,0,0)}">▶</a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-md-5">
+            <form action="/" id="actionForm" class="form-group" method="get">
+                <select name="type" style="width:20%;display: inline-block;">
+                    <option value="A" th:selected="${param.get('type')}">전체</option>
+                    <option value="T" th:selected="${param.get('type')}">제목</option>
+                    <option value="C" th:selected="${param.get('type')}">내용</option>
+                </select>
+                <input type="text" class="form-control" style="display: inline-block;width: 40%;" name="keyword" th:value="${param.get('keyword')}">
+                <input type="hidden" name="page" th:value="${param.get('page')}"/>
+            </form>
+        </div>
+        <div class="col-md-4" style="text-align: right">
+            <!-- Button to Open the Modal -->
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#boardModal">
+                글쓰기
+            </button>
+        </div>
+    </div>
 
     <!-- The Modal -->
     <div class="modal" id="boardModal">
