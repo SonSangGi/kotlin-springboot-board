@@ -42,4 +42,9 @@ class HomeController(private val boardRepository: BoardRepository) {
         return "list"
     }
 
+    @GetMapping("/detail")
+    fun detail(model: Model, @RequestParam no: Long): String {
+        model["board"] = boardRepository.findById(no).orElse(null)
+        return "detail"
+    }
 }

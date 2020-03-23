@@ -15,7 +15,7 @@ import java.time.LocalDateTime
 class DataLoader(private val boardRepository: BoardRepository) : ApplicationRunner {
     override fun run(args: ApplicationArguments?) {
         for (i in 1..105) {
-            boardRepository.save(Board(title = "게시글$i", content = "내용${105 - i}", created = LocalDateTime.now()))
+            boardRepository.save(Board(title = "게시글$i", content = "내용${105 - i}", writer = "USER$i", password = "1234"))
         }
     }
 }

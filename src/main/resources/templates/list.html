@@ -6,43 +6,75 @@
     <script>
         $(() => {
 
-            const actionForm = $("#actionForm");
-
             // 페이지네이션 클릭 이벤트
             $(".pagination a").on('click', function (e) {
                 e.preventDefault();
+
+                const actionForm = $("#actionForm");
                 actionForm.find("input[name='page']").val($(this).attr('href'));
                 actionForm.submit();
             });
+
+            // 글 작성
+            $("#writeForm").on('submit', function (e) {
+                e.preventDefault();
+
+                $.ajax({
+                    url: '/board',
+                    type: 'put',
+                    data: $(this).serialize(),
+                    success: () => {
+
+                        location.reload();
+
+                        //$("#writeModal").modal('hide');
+                    }
+                });
+            });
+
         });
     </script>
 </head>
 
 <div layout:fragment="content" class="col-md-12">
     <table class="table table-dark table-striped table-hover">
-        <col width="10%">
-        <col width="70%">
-        <col width="20%">
+
+        <colgroup>
+            <col width="10%">
+            <col width="*">
+            <col width="10%">
+            <col width="20%">
         </colgroup>
         <thead>
         <tr style="text-align: center">
             <td>번호</td>
             <td>제목</td>
+            <td>작성자</td>
             <td>날짜</td>
         </tr>
         </thead>
         <tbody>
+        <tr th:if="${pages.empty}">
+            <td colspan="4">
+                <h1>검색 결과가 없습니다.</h1>
+            </td>
+        </tr>
         <tr th:each="board : ${pages.content}">
             <td>[[${board.no}]]</td>
-            <td>[[${board.title}]]</td>
-            <td>[[${board.created}]]</td>
+            <td>
+                <a th:href="@{/detail(no=${board.no}, page=${param.get('page')}, keyword=${param.get('keyword')}, type=${param.get('type')})}">[[${board.title}]]</a>
+            </td>
+            <td>[[${board.writer}]]</td>
+            <td th:text="${#temporals.format(board.created, 'yyyy-MM-dd HH:mm')}"></td>
         </tr>
         </tbody>
     </table>
 
     <div class="row">
+        <!--    pagination    -->
         <div class="col-md-3">
             <ul class="pagination"
+                th:if="${!pages.empty}"
                 th:with="begin=${(T(Math).floor(pages.number / 5) * 5 + 1)},
                          end=(${begin + 4 gt pages.totalPages ? pages.totalPages : begin + 4})">
                 <li class="page-item" th:if="${begin ne 1}">
@@ -57,50 +89,64 @@
                 </li>
             </ul>
         </div>
+
+        <!--    search    -->
         <div class="col-md-5">
             <form action="/" id="actionForm" class="form-group" method="get">
                 <select name="type" style="width:20%;display: inline-block;">
-                    <option value="A" th:selected="${param.get('type')}">전체</option>
-                    <option value="T" th:selected="${param.get('type')}">제목</option>
-                    <option value="C" th:selected="${param.get('type')}">내용</option>
+                    <option value="A" th:selected="${param.get('type') eq 'A'}">전체</option>
+                    <option value="T" th:selected="${param.get('type') eq 'T'}">제목</option>
+                    <option value="C" th:selected="${param.get('type') eq 'C'}">내용</option>
                 </select>
-                <input type="text" class="form-control" style="display: inline-block;width: 40%;" name="keyword" th:value="${param.get('keyword')}">
+                <input type="text" class="form-control" style="display: inline-block;width: 40%;" name="keyword"
+                       th:value="${param.get('keyword')}">
                 <input type="hidden" name="page" th:value="${param.get('page')}"/>
             </form>
         </div>
+        <!--    write modal btn    -->
         <div class="col-md-4" style="text-align: right">
-            <!-- Button to Open the Modal -->
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#boardModal">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#writeModal">
                 글쓰기
             </button>
         </div>
     </div>
 
-    <!-- The Modal -->
-    <div class="modal" id="boardModal">
+    <!-- write modal -->
+    <div class="modal" id="writeModal">
         <div class="modal-dialog">
             <div class="modal-content">
 
-                <div class="modal-header">
-                    <h4 class="modal-title">게시글 작성</h4>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                </div>
-
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="title">제목</label>
-                        <input type="text" class="form-control" id="title">
+                <form id="writeForm">
+                    <div class="modal-header">
+                        <h4 class="modal-title">게시글 작성</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
                     </div>
-                    <div class="form-group">
-                        <label for="pwd">Password:</label>
-                        <input type="password" class="form-control" id="pwd">
-                    </div>
-                </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">닫기</button>
-                    <button type="button" class="btn btn-success">작성</button>
-                </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="title">제목</label>
+                            <input type="text" class="form-control" id="title" name="title">
+                        </div>
+                        <div class="form-group">
+                            <label for="user">이름</label>
+                            <input type="text" class="form-control" id="user" name="writer">
+                        </div>
+                        <div class="form-group">
+                            <label for="pwd">비밀번호</label>
+                            <input type="password" class="form-control" id="pwd" name="password">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="content">내용</label>
+                            <textarea rows="10" class="form-control" id="content" name="content"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">닫기</button>
+                        <button type="submit" class="btn btn-success">작성</button>
+                    </div>
+                </form>
 
             </div>
         </div>

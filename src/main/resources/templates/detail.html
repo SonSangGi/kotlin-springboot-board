@@ -1,0 +1,117 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layout}">
+
+<head>
+    <script>
+        $(() => {
+
+            const operForm = $("#operForm");
+
+            // 목록
+            $("#btnList").on("click", function (e) {
+                operForm.find("#no").remove();
+                operForm.submit();
+            });
+
+            // 수정
+            $("#modifyForm").submit(function (e) {
+                e.preventDefault();
+
+                $.ajax({
+                    url: '/board',
+                    type: 'put',
+                    data: $(this).serialize(),
+                    success: () => {location.reload()}
+                });
+
+            });
+
+        });
+    </script>
+</head>
+
+<div layout:fragment="content" class="col-md-12">
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">게시글</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label>번호</label>
+                        <input name="title" class="form-control" th:value="${board.no}" readonly="readonly">
+                    </div>
+                    <div class="form-group">
+                        <label>제목</label>
+                        <input name="title" class="form-control" th:value="${board.title}" readonly="readonly">
+                    </div>
+                    <div class="form-group">
+                        <label>내용</label>
+                        <textarea name="content" class="form-control" readonly="readonly" th:text="${board.content}"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>작성자</label>
+                        <input type="text" name="writer" class="form-control" readonly="readonly" th:value="${board.writer}">
+                    </div>
+                    <button id="btnList" class="btn btn-info" style="float: right">목록</button>
+                    <button id="btnModify" class="btn btn-warning" style="float: right" data-toggle="modal" data-target="#modifyModal">수정</button>
+
+                    <form id="operForm" action="/" method="get">
+                        <input type="hidden" id="no" name="no" th:value="${board.no}">
+                        <input type="hidden" name="page" th:value="${param.page}">
+                        <input type="hidden" name="keyword" th:value="${param.keyword}">
+                        <input type="hidden" name="type" th:value="${param.type}">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- write modal -->
+    <div class="modal" id="modifyModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <form id="modifyForm">
+                    <input type="hidden" name="no" th:value="${board.no}">
+                    <div class="modal-header">
+                        <h4 class="modal-title">게시글 작성</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="title">제목</label>
+                            <input type="text" class="form-control" id="title" name="title" th:value="${board.title}">
+                        </div>
+                        <div class="form-group">
+                            <label for="user">이름</label>
+                            <input type="text" class="form-control" id="user" name="writer" th:value="${board.writer}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="pwd">비밀번호</label>
+                            <input type="password" class="form-control" id="pwd" name="password">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="content">내용</label>
+                            <textarea rows="10" class="form-control" id="content" name="content" th:text="${board.content}"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">닫기</button>
+                        <button type="submit" class="btn btn-success">수정</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+</html>
